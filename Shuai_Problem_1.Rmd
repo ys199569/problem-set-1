@@ -70,6 +70,7 @@ data(mtcars)
 
 
 ```{r 2a}
+
 model_2a <- lm(mpg ~ cyl, data = mtcars)
 tidy(model_2a)%>%kable()
 ```
@@ -89,6 +90,7 @@ After adding weight (wt) to the regression model, the coefficient size of $\beta
 Looking at $\beta_2$ = -3.19 before wt, we know that holding other variables constant, when the weight of cars increases by 1 unit, the miles one gallon can sustain decreases by 3.19 units. 
 
 ```{r 2c}
+
 model_2c <- lm(mpg ~ cyl + wt, data = mtcars)
 tidy(model_2c)%>%kable()
 ```
@@ -100,9 +102,10 @@ $mpg_{i}$ = $\beta_0$ + $\beta_1$ * $cyl_{i}$ + $\beta_2$ * $wt_{i}$ +$\beta_3$ 
 By looking at the regression result, we can see that $\beta_1$ and $\beta_2$ are still negative, which means that the number of cylinders and the weight of the car are still negatively associated with the number of miles one gallon can sustain. However, the magnitude of the parameters changed. Meanwhile, $\beta_0$ is still positive, but the absolute value of $\beta_0$ also grows.
 
 
-Theoretically, the interaction term is trying to capture how the two variables affect each other. Here it just means that the negative effect of increasing either the number of cylinders or weight can be compromised by the increasing the other by looking at the positive parameter before the interaction term.  
+Theoretically, the interaction term is trying to capture how the two variables affect each other. We are imposing that the effect of number of cylinders is conditional on weight and vice versa. Here it just means that the negative effect of increasing either the number of cylinders or weight can be compromised by the increasing the other by looking at the positive parameter before the interaction term.  
 
 ```{r 2d} 
+
 model_2d <- lm(mpg ~ cyl + wt + I(cyl * wt), data = mtcars)
 tidy(model_2d)%>%kable()
 ```
@@ -110,10 +113,47 @@ tidy(model_2d)%>%kable()
 ## Question 3
 
 ```{r wage, include=FALSE}
+
 wage<- read_csv("wage_data.csv")
 
 ```
 
-**a.** The population regression function is:
+**3a.** The population regression function is:
 
-$wage_{i}$ = $\beta_0$ + $\beta_1$ * $age_{i}$ + $\beta_2$ * $wt_{i}$ + $\epsilon_i$
+$wage_{i}$ = $\beta_0$ + $\beta_1$ * $age_{i}$ + $\beta_2$ * $(age_{i})^{2}$ + $\epsilon_i$
+
+By looking at the result, we can see $\beta_1$ = 5.29, and $\beta_2$ = -0.05. Note that $\beta_1$ is positive, and $\beta_2$ is negative, it means that when there are two ways that age can affect wage, and the direction depends on one which is stronger.
+
+Therefore, it means that when age increases at the very beginning, the 5.29 * age is greater than -0.05 * $(age)^{2}$. As age grows, wage grows. However, when the situation changes after a certain point, as age grows, wage declines. It is hard to interpret the coefficient before the age squared alone as it is associated with the value of age. It will be clear if we take a partial derivative with respect to age.
+
+As for $\beta_0$, the interpretation for it is meaningless here, as wage at the age of 0 is normally not practical. 
+
+```{r 3a}
+
+model_3a <- lm(wage ~ age + I(age ^ 2), data = wage)
+tidy(model_3a)%>%kable()
+
+```
+
+\pagebreak
+
+**3b.** Note that for the graph 95% is indicated by shaded areas as is marked in the tag of the graph.
+
+
+```{r 3b}
+ggplot(wage, aes(x = age, y = wage)) +
+  geom_smooth(formula = y~poly(x,2), method = "lm", se = TRUE, level = 0.95) +
+  labs(title = "Predictions by Polynomial Model of Age on Wage",
+       tag = "95% C.I. Shown by Shaded Areas")
+
+```
+
+**3c.** The estimated function is concave. When age increases at the very beginning, the 5.29 * age is greater than -0.05 * $(age)^{2}$. As age grows, wage grows. However, when the situation changes at around 50, as age grows, wage declines. The turning point is around 50 according to the graph. 
+
+By fitting a polynomial regression, we are assuming that the relationship between age and wage is very complex and definitely not linear. 
+
+**3d.** In this example, if we use a simple linear regression model, we will definitely conclude that wage grows as age grows, but according to common sense and the discussion above we know that it is not the case. By using polynomial regression model, we are actually finding the turning point of wage declining affected by age. 
+
+In general, polynomial regression has higher order of variable and greater flexibility statistically. Polynomial provides the best approximation of the relationship between the dependent and independent variable. A Broad range of function can be fit under it. On the other hand, when only the first order is allowed, linear model tries to simplify the relationship between Y and Xs.
+
+Substantively, when relating the model to reality, it makes more sense that in most cases the relationship between two variables are not linear. Like the example in question 3. We all know that as a person ages, he or she will retire and the wage will definitely decline. However, it is worth noting that the result of linear regression is much more easier to interpret compared to that of the polynomial regression as the higher order coefficeint interpretation depends on the lower order change. 
