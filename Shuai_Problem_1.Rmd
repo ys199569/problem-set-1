@@ -1,0 +1,119 @@
+---
+title: "Problem Set 1"
+author: "Shuai Yuan"
+date: "January 17, 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+library(readr)
+library(broom)
+library(modelr)
+library(lmtest)
+library(knitr)
+
+theme_set(
+  theme_classic()+
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(plot.subtitle = element_text(hjust = 0.5)) +
+    theme(plot.tag.position = c(0.8, 0)) +
+    theme(plot.tag = element_text(size=8)) +
+    theme(strip.text.y = element_blank())
+          )
+# optional download
+if_download <- TRUE
+```
+
+## Question 1
+
+In terms of definition, supervised learning is simply a process of learning algorithm from the training dataset, while unsupervised learning is modeling the underlying or hidden structure or distribution in the data in order to learn more about the data.
+
+**As for supervised machine learning**, it normally has the predictor feature measurement X associated with Y. The relationship between X and Y can be expressed in a function of X. 
+
+And our target is to find a proper function based on observed pairs of X and Y. These paired X and Y are also known as the training datasets. In other words, we are trying to find an optimal model to fit the training data, or the paired X and Y, in a function of X.   
+
+In addition, these training data are usually well “labeled” during the generating process. We usually know exactly how the datasets are generated, which means some data is already tagged with the correct answer. Therefore, in this way, supervised learning is a simpler method in terms of computational complexity. Meanwhile, if the data pairs are labelled properly, the accuracy of supervised machine learning can be well guaranteed.
+
+And we train the machine with the proper training datasets, we can now estimate the function. We can easily predict the outcome Y with other datasets that are different from the training datasets. Being able to predict the outcome accurately is our goal to conduct supervised machine learning. 
+
+Typical examples of supervised machine learning include classification, regression, linear regression and support vector machine. It is often used for export systems in image recognition, speech recognition, forecasting, financial analysis and training neural networks and decision trees, etc. 
+ 
+**As for unsupervised machine learning**, it does not have a Y associated with the predictor feature measurement X. To be more specific, there is no Y in the unsupervised machine learning world. As a result, of course we can’t even find the relationship between X and Y. 
+
+And basically there is no target for unsupervised machine learning. We don’t even know if all the Xs can form a pattern or not before the machine itself identifies one.
+
+In addition, there is no such thing as training data for unsupervised machine learning. Usually the algorithms are used against data to be tested directly. And we generally have no idea of how these datasets are generated. In other words, these datasets are not labelled during the collection process. Therefore, in this way, unsupervised learning is usually a much more complicated method in terms of computational complexity. Meanwhile, since all the data pairs are not labelled, the accuracy and trustworthiness of supervised machine learning can’t be ensured. 
+
+Given all the unknown situations, the goal of approaching these datasets is to examine, explore and figure a pattern for these Xs underlying the dataset. To be more specific, it is a data structure exploration process.
+
+Typical examples of unsupervised machine learning generally include clustering, association, and K-means. It is often used to pre-process the data, during exploratory analysis or to pre-train supervised learning algorithms.
+
+\pagebreak
+
+## Question 2
+
+**2a.** The population regression model is: $mpg_{i}$ = $\beta_0$ + $\beta_1$ * $cyl_{i}$ + $\epsilon_i$.
+
+This model is estimating the impact of the number of cylinders on the number of miles per gallon can sustain. 
+
+The output in this model is miles per gallon (mpg), and two parameter values are $\beta_0$ = 37.88, $\beta_1$ = -2.88. 
+
+As for the interpretation of $\beta_0$ = 37.88, it simply means when there is no cylinder for a car, the number of miles one gallon can sustain for the car is 37.88, which is of course not practical. 
+
+As for the interpretation of $\beta_1$ = -2.88 , it means that when the number of cylinders increases by 1 unit, the miles one gallon can sustain decreases by 2.88 units, and the result is statistically significant. 
+
+```{r mtcars, include=FALSE}
+data(mtcars)
+```
+
+
+```{r 2a}
+model_2a <- lm(mpg ~ cyl, data = mtcars)
+tidy(model_2a)%>%kable()
+```
+
+ **2b.** The population regression function is:
+
+$mpg_{i}$ = $\beta_0$ + $\beta_1$ * $cyl_{i}$ + $\epsilon_i$, where $\beta_0$ = 37.88, $\beta_1$ = 2.88 based on our estimation above. 
+
+**2c.** By adding weight to the specification, the regression model now changes to: 
+
+$mpg_{i}$ = $\beta_0$ + $\beta_1$ * $cyl_{i}$ + $\beta_2$ * $wt_{i}$ + $\epsilon_i$
+
+Comparing (a) and (c), the intercepts, $\beta_0$, are basically the same, but the intercept in c is slightly higher. As for the $\beta_0$ = 39.68 in (c), it simply means when there is no cylinder and no weight for a car, the number of miles one gallon can sustain for the car is 39.68, which is not practical.
+
+After adding weight (wt) to the regression model, the coefficient size of $\beta_1$ decreases by nearly 1.4 from -2.88 to -1.51, but still negative and statistically significant. The $\beta_1$ = -1.51 in (c) means that holding other variables constant, when the number of cylinders increases by 1 unit, the miles one gallon can sustain decreases by 1.5 units. The impact of cylinders has decreased with the new variables added.
+
+Looking at $\beta_2$ = -3.19 before wt, we know that holding other variables constant, when the weight of cars increases by 1 unit, the miles one gallon can sustain decreases by 3.19 units. 
+
+```{r 2c}
+model_2c <- lm(mpg ~ cyl + wt, data = mtcars)
+tidy(model_2c)%>%kable()
+```
+
+**2d.** After adding the interaction term, the model now changes to: 
+
+$mpg_{i}$ = $\beta_0$ + $\beta_1$ * $cyl_{i}$ + $\beta_2$ * $wt_{i}$ +$\beta_3$ * $cyl_{i}$ *  $wt_{i}$ + $\epsilon_i$
+
+By looking at the regression result, we can see that $\beta_1$ and $\beta_2$ are still negative, which means that the number of cylinders and the weight of the car are still negatively associated with the number of miles one gallon can sustain. However, the magnitude of the parameters changed. Meanwhile, $\beta_0$ is still positive, but the absolute value of $\beta_0$ also grows.
+
+
+Theoretically, the interaction term is trying to capture how the two variables affect each other. Here it just means that the negative effect of increasing either the number of cylinders or weight can be compromised by the increasing the other by looking at the positive parameter before the interaction term.  
+
+```{r 2d} 
+model_2d <- lm(mpg ~ cyl + wt + I(cyl * wt), data = mtcars)
+tidy(model_2d)%>%kable()
+```
+
+## Question 3
+
+```{r wage, include=FALSE}
+wage<- read_csv("wage_data.csv")
+
+```
+
+**a.** The population regression function is:
+
+$wage_{i}$ = $\beta_0$ + $\beta_1$ * $age_{i}$ + $\beta_2$ * $wt_{i}$ + $\epsilon_i$
